@@ -15,7 +15,7 @@ const addBookHandler = (request, h) => {
     pageCount, readPage, reading, createdAt, updatedAt,
   };
 
-  if (name === undefined || name.length <= 0) {
+  if (name === undefined || name.length < 1) {
     const response = h.response({
       status: 'fail',
       message: 'Gagal menambahkan buku. Mohon isi nama buku',
@@ -74,7 +74,7 @@ const getAllBooksHandler = () => ({
 const getBookByIdHandler = (request, h) => {
   const {id} = request.params;
 
-  const book = books.filter((book) => book.id == id);
+  const book = books.filter((book) => book.id === id);
 
   if (book.length > 0) {
     return ({
@@ -95,4 +95,77 @@ const getBookByIdHandler = (request, h) => {
   }
 };
 
-module.exports = {addBookHandler, getAllBooksHandler, getBookByIdHandler};
+const editBookByIdHandler = (request, h) => {
+  const {id} = request.params;
+
+  const {
+    name, year, author, summary, publisher, pageCount, readPage, reading,
+  } = request.payload;
+
+  const updatedAt = new Date().toISOString();
+
+  const index = books.findIndex((note) => note.id === id);
+
+  if (name === undefined || name.length < 1) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. Mohon isi nama buku',
+    });
+
+    response.code(400);
+
+    return response;
+  }
+
+  if (readPage > pageCount) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. ' +
+        'readPage tidak boleh lebih besar dari pageCount',
+    });
+
+    response.code(400);
+
+    return response;
+  }
+
+  if (index !== -1) {
+    books[index] = {
+      ...books[index],
+      name,
+      year,
+      author,
+      summary,
+      publisher,
+      pageCount,
+      readPage,
+      reading,
+      updatedAt,
+    };
+
+    const response = h.response({
+      status: 'success',
+      message: 'buku berhasil diperbarui',
+    });
+
+    response.code(200);
+
+    return response;
+  } else {
+    const response = h.response({
+      status: 'fail',
+      message: 'Gagal memperbarui buku. Id tidak ditemukan',
+    });
+
+    response.code(404);
+
+    return response;
+  }
+};
+
+module.exports = {
+  addBookHandler,
+  getAllBooksHandler,
+  getBookByIdHandler,
+  editBookByIdHandler,
+};
