@@ -7,12 +7,13 @@ const addBookHandler = (request, h) => {
   } = request.payload;
 
   const id = nanoid(16);
-  const createdAt = new Date().toISOString();
-  const updatedAt = createdAt;
+  const insertedAt = new Date().toISOString();
+  const updatedAt = insertedAt;
+  const finished = pageCount === readPage;
 
   const book = {
-    id, name, year, author, summary, publisher,
-    pageCount, readPage, reading, createdAt, updatedAt,
+    id, name, year, author, summary, publisher, pageCount,
+    readPage, reading, insertedAt, updatedAt, finished,
   };
 
   if (name === undefined || name.length < 1) {
@@ -46,7 +47,9 @@ const addBookHandler = (request, h) => {
     const response = h.response({
       status: 'success',
       message: 'Buku berhasil ditambahkan',
-      bookId: id,
+      data: {
+        bookId: id,
+      },
     });
 
     response.code(201);
@@ -65,7 +68,7 @@ const addBookHandler = (request, h) => {
 };
 
 const getAllBooksHandler = (request, h) => {
-  const {name, reading} = request.query;
+  const {name, reading, finished} = request.query;
 
   let filteredBooks = books;
 
@@ -77,14 +80,22 @@ const getAllBooksHandler = (request, h) => {
 
   if (reading !== undefined) {
     filteredBooks = filteredBooks.filter(
-        (book) => book.reading === reading,
+        (book) => book.reading == reading,
+    );
+  }
+
+  if (finished !== undefined) {
+    filteredBooks = filteredBooks.filter(
+        (book) => book.finished == finished,
     );
   }
 
   const response = h.response({
     status: 'success',
     data: {
-      filteredBooks,
+      books: filteredBooks.map(({id, name, publisher}) =>
+        ({id, name, publisher}),
+      ),
     },
   });
 
@@ -123,6 +134,7 @@ const editBookByIdHandler = (request, h) => {
   } = request.payload;
 
   const updatedAt = new Date().toISOString();
+  const finished = pageCount === readPage;
 
   const index = books.findIndex((note) => note.id === id);
 
@@ -161,11 +173,12 @@ const editBookByIdHandler = (request, h) => {
       readPage,
       reading,
       updatedAt,
+      finished,
     };
 
     const response = h.response({
       status: 'success',
-      message: 'buku berhasil diperbarui',
+      message: 'Buku berhasil diperbarui',
     });
 
     response.code(200);
