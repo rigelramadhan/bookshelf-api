@@ -64,12 +64,32 @@ const addBookHandler = (request, h) => {
   return response;
 };
 
-const getAllBooksHandler = () => ({
-  status: 'success',
-  data: {
-    books,
-  },
-});
+const getAllBooksHandler = (request, h) => {
+  const {name, reading} = request.query;
+
+  let filteredBooks = books;
+
+  if (name !== undefined) {
+    filteredBooks = filteredBooks.filter(
+        (book) => book.name.toLowerCase() === name.toLowerCase(),
+    );
+  }
+
+  if (reading !== undefined) {
+    filteredBooks = filteredBooks.filter(
+        (book) => book.reading === reading,
+    );
+  }
+
+  const response = h.response({
+    status: 'success',
+    data: {
+      filteredBooks,
+    },
+  });
+
+  return response;
+};
 
 const getBookByIdHandler = (request, h) => {
   const {id} = request.params;
